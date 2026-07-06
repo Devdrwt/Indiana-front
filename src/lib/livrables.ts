@@ -3,11 +3,20 @@ import path from "path";
 import matter from "gray-matter";
 
 export type Agent =
+  // Métier
   | "strategiste"
   | "createur"
   | "designer"
   | "analyste"
-  | "presentateur";
+  | "presentateur"
+  // Support
+  | "gmail"
+  | "fireflies"
+  | "cv"
+  // Spécifiques Drwintech
+  | "institutionnel"
+  | "cahier-des-charges"
+  | "appel-offres";
 
 export type Statut = "draft" | "validated" | "archived";
 
@@ -26,14 +35,23 @@ export interface Livrable {
 }
 
 const AGENT_FOLDERS: Record<Agent, string> = {
+  // Métier
   strategiste: "briefs",
   createur: "content",
   designer: "prompts-images",
   analyste: "analytics",
   presentateur: "decks",
+  // Support
+  gmail: "gmail",
+  fireflies: "meetings",
+  cv: "hiring",
+  // Spécifiques Drwintech
+  institutionnel: "institutionnel",
+  "cahier-des-charges": "cahiers-charges",
+  "appel-offres": "appels-offres",
 };
 
-// La racine de la plateforme est le dossier parent de `dashboard/`.
+// La racine de la plateforme est le dossier parent du front (Projet-Indiana).
 const ROOT = path.resolve(process.cwd(), "..");
 
 export function getLivrables(agent?: Agent): Livrable[] {
@@ -88,6 +106,8 @@ export function getLivrableById(id: string): Livrable | null {
 export function countByAgent(): Record<Agent, number> {
   const counts = {
     strategiste: 0, createur: 0, designer: 0, analyste: 0, presentateur: 0,
+    gmail: 0, fireflies: 0, cv: 0,
+    institutionnel: 0, "cahier-des-charges": 0, "appel-offres": 0,
   } as Record<Agent, number>;
   for (const l of getLivrables()) counts[l.agent] = (counts[l.agent] ?? 0) + 1;
   return counts;

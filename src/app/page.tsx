@@ -19,7 +19,7 @@ export default function Home() {
         {livrables.length} livrable(s) produits par la chaîne d'agents.
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
         {AGENTS.map((a) => (
           <Link
             key={a.key}

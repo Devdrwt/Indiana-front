@@ -7,12 +7,23 @@ export const DRWINTECH = {
   gris: "#475569",
 } as const;
 
+export type AgentGroup = "Métier" | "Support" | "Drwintech";
+
 export const AGENTS = [
-  { key: "strategiste", label: "Stratège", folder: "briefs", color: DRWINTECH.navy },
-  { key: "createur", label: "Créateur", folder: "content", color: DRWINTECH.cyan },
-  { key: "designer", label: "Designer", folder: "prompts-images", color: DRWINTECH.or },
-  { key: "analyste", label: "Analyste", folder: "analytics", color: DRWINTECH.navy },
-  { key: "presentateur", label: "Présentateur", folder: "decks", color: DRWINTECH.cyan },
+  // Agents métier
+  { key: "strategiste", label: "Stratège", folder: "briefs", color: DRWINTECH.navy, group: "Métier" },
+  { key: "createur", label: "Créateur", folder: "content", color: DRWINTECH.cyan, group: "Métier" },
+  { key: "designer", label: "Designer", folder: "prompts-images", color: DRWINTECH.or, group: "Métier" },
+  { key: "analyste", label: "Analyste", folder: "analytics", color: DRWINTECH.navy, group: "Métier" },
+  { key: "presentateur", label: "Présentateur", folder: "decks", color: DRWINTECH.cyan, group: "Métier" },
+  // Agents support
+  { key: "gmail", label: "Gmail", folder: "gmail", color: DRWINTECH.gris, group: "Support" },
+  { key: "fireflies", label: "Fireflies", folder: "meetings", color: DRWINTECH.gris, group: "Support" },
+  { key: "cv", label: "Recrutement", folder: "hiring", color: DRWINTECH.gris, group: "Support" },
+  // Agents spécifiques Drwintech
+  { key: "institutionnel", label: "Institutionnel", folder: "institutionnel", color: DRWINTECH.or, group: "Drwintech" },
+  { key: "cahier-des-charges", label: "Cahier des charges", folder: "cahiers-charges", color: DRWINTECH.navy, group: "Drwintech" },
+  { key: "appel-offres", label: "Appel d'offres", folder: "appels-offres", color: DRWINTECH.cyan, group: "Drwintech" },
 ] as const;
 
 export const CLIENTS = [

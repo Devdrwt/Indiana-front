@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { AGENTS, DRWINTECH } from "@/lib/constants";
+import { AGENTS, DRWINTECH, type AgentGroup } from "@/lib/constants";
+
+const GROUPS: AgentGroup[] = ["Métier", "Support", "Drwintech"];
 
 export default function Sidebar() {
   return (
@@ -20,17 +22,21 @@ export default function Sidebar() {
         <Link href="/" className="py-2 px-3 rounded hover:bg-white/10">
           Vue d'ensemble
         </Link>
-        <div style={{ color: DRWINTECH.or }} className="mt-4 mb-1 text-xs uppercase tracking-wider">
-          Agents métier
-        </div>
-        {AGENTS.map((a) => (
-          <Link
-            key={a.key}
-            href={`/agents/${a.key}`}
-            className="py-2 px-3 rounded hover:bg-white/10"
-          >
-            {a.label}
-          </Link>
+        {GROUPS.map((group) => (
+          <div key={group}>
+            <div style={{ color: DRWINTECH.or }} className="mt-4 mb-1 text-xs uppercase tracking-wider">
+              Agents {group}
+            </div>
+            {AGENTS.filter((a) => a.group === group).map((a) => (
+              <Link
+                key={a.key}
+                href={`/agents/${a.key}`}
+                className="py-2 px-3 rounded hover:bg-white/10 block"
+              >
+                {a.label}
+              </Link>
+            ))}
+          </div>
         ))}
       </nav>
 

@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Rendu markdown des livrables (LivrablePreview) */
+.prose-drwintech h1 { font-size: 1.8rem; font-weight: 800; color: #0A1F44; margin: 1.2rem 0 0.6rem; }
+.prose-drwintech h2 { font-size: 1.4rem; font-weight: 700; color: #0A1F44; margin: 1.1rem 0 0.5rem; border-bottom: 2px solid #D97706; padding-bottom: 4px; }
+.prose-drwintech h3 { font-size: 1.15rem; font-weight: 700; color: #0891B2; margin: 0.9rem 0 0.4rem; }
+.prose-drwintech h4 { font-size: 1rem; font-weight: 700; color: #475569; margin: 0.8rem 0 0.3rem; }
+.prose-drwintech p  { margin: 0.5rem 0; line-height: 1.6; color: #1e293b; }
+.prose-drwintech ul { list-style: disc; padding-left: 1.4rem; margin: 0.5rem 0; }
+.prose-drwintech li { margin: 0.25rem 0; line-height: 1.5; color: #1e293b; }
+.prose-drwintech code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+.prose-drwintech pre { background: #0A1F44; color: #FEFBF3; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 0.8rem 0; }
+.prose-drwintech pre code { background: transparent; color: inherit; padding: 0; }
+.prose-drwintech strong { color: #0A1F44; }

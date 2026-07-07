@@ -79,6 +79,13 @@ function walkMd(baseDir: string, rel = ""): string[] {
   return results;
 }
 
+// gray-matter parse un `date: 2026-07-07` YAML en objet Date. On le
+// re-normalise en chaîne YYYY-MM-DD pour l'affichage et le tri.
+function normalizeDate(d: unknown): string {
+  if (d instanceof Date) return d.toISOString().slice(0, 10);
+  return String(d ?? "");
+}
+
 export function getLivrables(agent?: Agent): Livrable[] {
   const folders = agent
     ? [AGENT_FOLDERS[agent]]
@@ -104,7 +111,7 @@ export function getLivrables(agent?: Agent): Livrable[] {
         client: data.client ?? "?",
         campagne: data.campagne ?? "",
         agent: (data.agent ?? agentFromFolder(folder)) as Agent,
-        date: String(data.date ?? ""),
+        date: normalizeDate(data.date),
         version: data.version || 1,
         statut: (data.statut || "draft") as Statut,
         framework: data.framework,

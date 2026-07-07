@@ -1,35 +1,33 @@
 import Link from "next/link";
 import type { Livrable } from "@/lib/livrables";
 import AgentBadge from "./AgentBadge";
-import { DRWINTECH } from "@/lib/constants";
 
 const STATUT_COLORS: Record<string, string> = {
-  draft: "#94a3b8",
-  validated: "#16a34a",
-  archived: "#cbd5e1",
+  draft: "#f0a94b",
+  validated: "#22c55e",
+  archived: "#64748b",
 };
 
 export default function LivrableCard({ livrable }: { livrable: Livrable }) {
+  const statutColor = STATUT_COLORS[livrable.statut] ?? "#f0a94b";
   return (
-    <Link
-      href={`/livrables/${livrable.id}`}
-      className="block border rounded-lg p-4 hover:shadow-md transition bg-white"
-      style={{ borderColor: "#e2e8f0" }}
-    >
-      <div className="flex items-center justify-between mb-2">
+    <Link href={`/livrables/${livrable.id}`} className="glass card-hover p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
         <AgentBadge agent={livrable.agent} />
         <span
-          className="text-xs px-2 py-0.5 rounded"
-          style={{ background: STATUT_COLORS[livrable.statut] ?? "#94a3b8", color: "#fff" }}
+          className="text-[11px] px-2 py-0.5 rounded-full border"
+          style={{ color: statutColor, borderColor: statutColor + "55", background: statutColor + "18" }}
         >
           {livrable.statut}
         </span>
       </div>
-      <h3 style={{ color: DRWINTECH.navy }} className="font-semibold text-sm mb-1">
+
+      <h3 className="font-semibold text-[15px] leading-snug text-white">
         {livrable.campagne || livrable.id}
       </h3>
-      <div className="text-xs text-slate-500 flex gap-2 flex-wrap">
-        <span>{livrable.client}</span>
+
+      <div className="text-[12px] flex gap-2 flex-wrap mt-auto" style={{ color: "var(--muted)" }}>
+        <span className="text-white/80">{livrable.client}</span>
         <span>·</span>
         <span>{livrable.date}</span>
         {livrable.framework && (<><span>·</span><span>{livrable.framework}</span></>)}

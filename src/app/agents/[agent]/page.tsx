@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLivrables, type Agent } from "@/lib/livrables";
-import { AGENTS, DRWINTECH } from "@/lib/constants";
+import { AGENTS } from "@/lib/constants";
 import LivrableCard from "@/components/LivrableCard";
 
 export const dynamic = "force-dynamic";
@@ -19,18 +19,26 @@ export default async function AgentPage({
   const livrables = getLivrables(agent as Agent);
 
   return (
-    <div>
-      <h1 style={{ color: DRWINTECH.navy }} className="text-3xl font-bold mb-1">
-        {meta.label}
-      </h1>
-      <p className="text-slate-500 mb-8">
-        Dossier <code>{meta.folder}/</code> · {livrables.length} livrable(s)
-      </p>
+    <div className="flex flex-col gap-8">
+      <header className="glass-strong accent-top p-8">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="dot" style={{ color: meta.color, background: meta.color }} />
+          <span className="text-xs uppercase tracking-[0.18em]" style={{ color: "var(--muted)" }}>
+            Agent {meta.group}
+          </span>
+        </div>
+        <h1 className="text-4xl font-black text-white">{meta.label}</h1>
+        <p className="mt-2" style={{ color: "var(--muted)" }}>
+          Dossier <code className="text-white/90">{meta.folder}/</code> · {livrables.length} livrable(s)
+        </p>
+      </header>
 
       {livrables.length === 0 ? (
-        <p className="text-slate-500">Aucun livrable produit par cet agent.</p>
+        <div className="glass p-8 text-center" style={{ color: "var(--muted)" }}>
+          Aucun livrable produit par cet agent pour l'instant.
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {livrables.map((l) => (
             <LivrableCard key={l.id} livrable={l} />
           ))}

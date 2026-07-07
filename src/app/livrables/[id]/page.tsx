@@ -16,10 +16,14 @@ export default async function LivrablePage({
 
   return (
     <div>
-      <Link href="/" className="text-sm text-slate-500 hover:underline">
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg glass card-hover"
+        style={{ color: "var(--muted)" }}
+      >
         ← Retour
       </Link>
-      <div className="mt-4">
+      <div className="mt-5">
         <LivrablePreview livrable={livrable} />
       </div>
     </div>

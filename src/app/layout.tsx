@@ -12,10 +12,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr">
-      <body style={{ background: "#f8fafc", fontFamily: "Arial, Helvetica, sans-serif" }}>
+      <body>
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 p-8">{children}</main>
+          <main className="flex-1 p-8 md:p-10 max-w-[1400px]">{children}</main>
         </div>
       </body>
     </html>

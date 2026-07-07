@@ -54,6 +54,31 @@ const AGENT_FOLDERS: Record<Agent, string> = {
 // La racine de la plateforme est le dossier parent du front (Projet-Indiana).
 const ROOT = path.resolve(process.cwd(), "..");
 
+// Dossiers/fichiers ignorés lors du scan :
+// - tout ce qui commence par `_` = fichier d'entrée (transcript, CV, export…)
+// - `exports` = données analytics brutes, pas des livrables
+const IGNORED_DIRS = new Set(["exports", "node_modules", ".git"]);
+
+// Parcourt un dossier agent en profondeur et renvoie les .md livrables
+// (chemin relatif au dossier agent, séparateur `/`).
+function walkMd(baseDir: string, rel = ""): string[] {
+  const results: string[] = [];
+  const dir = path.join(baseDir, rel);
+  if (!fs.existsSync(dir)) return results;
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith("_")) continue; // fichier/dossier d'entrée
+    const relPath = rel ? `${rel}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      if (IGNORED_DIRS.has(entry.name)) continue;
+      results.push(...walkMd(baseDir, relPath));
+    } else if (entry.name.endsWith(".md")) {
+      results.push(relPath);
+    }
+  }
+  return results;
+}
+
 export function getLivrables(agent?: Agent): Livrable[] {
   const folders = agent
     ? [AGENT_FOLDERS[agent]]
@@ -65,20 +90,16 @@ export function getLivrables(agent?: Agent): Livrable[] {
     const dir = path.join(ROOT, folder);
     if (!fs.existsSync(dir)) continue;
 
-    const files = fs
-      .readdirSync(dir)
-      .filter((f) => f.endsWith(".md"));
-
-    for (const file of files) {
-      const fullPath = path.join(dir, file);
+    for (const relPath of walkMd(dir)) {
+      const fullPath = path.join(dir, relPath);
       const raw = fs.readFileSync(fullPath, "utf-8");
       const { data, content } = matter(raw);
 
+      // id unique et URL-safe : dossier agent + sous-chemin, `/` → `__`.
+      const idBase = `${folder}/${relPath.replace(/\.md$/, "")}`.replace(/\//g, "__");
+
       livrables.push({
-        // Préfixe dossier : deux agents peuvent produire le même nom de
-        // fichier dans des dossiers différents. `__` reste URL-safe pour
-        // la route /livrables/[id].
-        id: `${folder}__${file.replace(/\.md$/, "")}`,
+        id: idBase,
         path: fullPath,
         client: data.client ?? "?",
         campagne: data.campagne ?? "",

@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AGENTS, CLIENTS, RUNNABLE_AGENT_KEYS, DRWINTECH } from "@/lib/constants";
+import { AGENTS, CLIENTS, RUNNABLE_AGENT_KEYS, AGENT_CONFIG, DRWINTECH } from "@/lib/constants";
 
-const RUNNABLE = AGENTS.filter((a) =>
-  (RUNNABLE_AGENT_KEYS as readonly string[]).includes(a.key),
-);
+// Agents pilotables, dans l'ordre de constants (métier puis data).
+const RUNNABLE = (RUNNABLE_AGENT_KEYS as readonly string[])
+  .map((key) => AGENTS.find((a) => a.key === key)!)
+  .filter(Boolean);
 
 const FORMATS = ["linkedin-long", "linkedin-carrousel", "reels-instagram", "tiktok", "youtube-long", "youtube-short"];
 
@@ -17,17 +18,32 @@ export default function NouvellePage() {
   const [campagne, setCampagne] = useState("");
   const [format, setFormat] = useState(FORMATS[0]);
   const [contexte, setContexte] = useState("");
+  const [source, setSource] = useState("");
+  const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const meta = RUNNABLE.find((a) => a.key === agent)!;
-  const showFormat = agent === "createur";
+  const cfg = AGENT_CONFIG[agent] ?? {};
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFileName(f.name);
+    const reader = new FileReader();
+    reader.onload = () => setSource(String(reader.result ?? ""));
+    reader.readAsText(f);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (!campagne.trim()) {
-      setError("Renseigne une campagne.");
+      setError("Renseigne une campagne (sert de nom de livrable).");
+      return;
+    }
+    if (cfg.needsInput && !source.trim()) {
+      setError("Cet agent a besoin d'un document d'entrée : colle-le ou charge un fichier.");
       return;
     }
     setLoading(true);
@@ -40,7 +56,8 @@ export default function NouvellePage() {
           client,
           campagne: campagne.trim(),
           contexte: contexte.trim() || undefined,
-          format: showFormat ? format : undefined,
+          format: cfg.hasFormat ? format : undefined,
+          input: cfg.needsInput ? source : undefined,
         }),
       });
       const data = await res.json();
@@ -64,7 +81,7 @@ export default function NouvellePage() {
         </p>
         <h1 className="text-4xl font-black text-gradient">Nouvelle production</h1>
         <p className="mt-2" style={{ color: "var(--muted)" }}>
-          Lance un agent directement depuis le dashboard. Le livrable est écrit puis affiché.
+          Lance n'importe quel agent depuis le dashboard. Le livrable est écrit puis affiché.
         </p>
       </header>
 
@@ -74,6 +91,7 @@ export default function NouvellePage() {
             {RUNNABLE.map((a) => (
               <option key={a.key} value={a.key}>
                 {a.label} · {a.group}
+                {AGENT_CONFIG[a.key]?.needsInput ? " · document requis" : ""}
               </option>
             ))}
           </select>
@@ -89,7 +107,7 @@ export default function NouvellePage() {
           </select>
         </Field>
 
-        <Field label="Campagne">
+        <Field label="Campagne / intitulé">
           <input
             value={campagne}
             onChange={(e) => setCampagne(e.target.value)}
@@ -98,7 +116,7 @@ export default function NouvellePage() {
           />
         </Field>
 
-        {showFormat && (
+        {cfg.hasFormat && (
           <Field label="Format">
             <select value={format} onChange={(e) => setFormat(e.target.value)} className="input">
               {FORMATS.map((f) => (
@@ -110,11 +128,37 @@ export default function NouvellePage() {
           </Field>
         )}
 
+        {cfg.needsInput && (
+          <Field label={cfg.inputLabel ?? "Document d'entrée"}>
+            <textarea
+              value={source}
+              onChange={(e) => {
+                setSource(e.target.value);
+                setFileName(null);
+              }}
+              rows={8}
+              placeholder={cfg.inputPlaceholder ?? "Colle ici le document à traiter…"}
+              className="input resize-y font-mono text-[13px]"
+            />
+            <div className="flex items-center gap-3 mt-1">
+              <label className="text-xs cursor-pointer underline" style={{ color: DRWINTECH.or }}>
+                Charger un fichier (.txt .md .csv .json)
+                <input type="file" accept=".txt,.md,.csv,.json" onChange={onFile} className="hidden" />
+              </label>
+              {fileName && (
+                <span className="text-xs" style={{ color: "var(--muted)" }}>
+                  {fileName} chargé
+                </span>
+              )}
+            </div>
+          </Field>
+        )}
+
         <Field label="Contexte / objectif (optionnel)">
           <textarea
             value={contexte}
             onChange={(e) => setContexte(e.target.value)}
-            rows={4}
+            rows={3}
             placeholder="ex : générer des demandes de démo auprès des hôtels indépendants…"
             className="input resize-y"
           />
@@ -139,7 +183,7 @@ export default function NouvellePage() {
             {loading ? `${meta.label} au travail…` : `Lancer ${meta.label}`}
           </button>
           <span className="text-xs" style={{ color: "var(--muted)" }}>
-            Modèle Claude · peut prendre 30–90 s
+            Modèle Claude · 30–90 s
           </span>
         </div>
       </form>

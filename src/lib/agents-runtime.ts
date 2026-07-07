@@ -4,7 +4,7 @@ import path from "path";
 import matter from "gray-matter";
 import Anthropic from "@anthropic-ai/sdk";
 import { AGENT_FOLDERS, type Agent } from "./livrables";
-import { RUNNABLE_AGENT_KEYS } from "./constants";
+import { RUNNABLE_AGENT_KEYS, AGENT_CONFIG } from "./constants";
 
 // Racine de la plateforme = dossier parent du front (Projet-Indiana).
 const ROOT = path.resolve(process.cwd(), "..");
@@ -12,7 +12,7 @@ const AGENTS_DIR = path.join(ROOT, ".claude", "agents");
 const CLIENTS_DIR = path.join(ROOT, "clients");
 
 // Agents pilotables depuis le dashboard (source unique dans constants.ts).
-export const RUNNABLE_AGENTS: Agent[] = [...RUNNABLE_AGENT_KEYS];
+export const RUNNABLE_AGENTS: Agent[] = [...RUNNABLE_AGENT_KEYS] as Agent[];
 
 // Mappe le champ `model` du frontmatter agent vers un ID de modèle Claude.
 function resolveModel(model: unknown): string {
@@ -51,6 +51,7 @@ export interface RunInput {
   campagne: string;
   contexte?: string;
   format?: string; // pour le Créateur
+  input?: string; // document d'entrée pour les agents data
 }
 
 export interface RunResult {
@@ -60,7 +61,8 @@ export interface RunResult {
 }
 
 export async function runAgent(input: RunInput): Promise<RunResult> {
-  const { agent, client, campagne, contexte, format } = input;
+  const { agent, client, campagne, contexte, format, input: sourceDoc } = input;
+  const cfg = AGENT_CONFIG[agent] ?? {};
 
   if (!RUNNABLE_AGENTS.includes(agent)) {
     throw new Error(`Agent non pilotable depuis le dashboard : ${agent}`);
@@ -70,6 +72,9 @@ export async function runAgent(input: RunInput): Promise<RunResult> {
       "ANTHROPIC_API_KEY manquante. Crée un fichier Indiana-front/.env.local avec ANTHROPIC_API_KEY=sk-ant-…",
     );
   }
+  if (cfg.needsInput && !sourceDoc?.trim()) {
+    throw new Error("Cet agent a besoin d'un document d'entrée (colle-le ou charge un fichier).");
+  }
 
   // 1. System prompt = corps du fichier .claude/agents/{agent}.md
   const agentFile = path.join(AGENTS_DIR, `${agent}.md`);
@@ -78,22 +83,29 @@ export async function runAgent(input: RunInput): Promise<RunResult> {
   const { data: agentMeta, content: systemBody } = matter(raw);
 
   // 2. Contexte injecté : mémoire client
+  const contextParts: string[] = [];
   const brand = readIfExists(path.join(CLIENTS_DIR, client, "brand.md"));
-  if (!brand) {
+  if (cfg.needsClientMemory && !brand) {
     throw new Error(
       `Mémoire de marque absente pour « ${client} » (clients/${client}/brand.md). Remplis-la avant de produire.`,
     );
   }
-  const icp = readIfExists(path.join(CLIENTS_DIR, client, "icp.md"));
-  const historique = readIfExists(path.join(CLIENTS_DIR, client, "historique.md"));
-
-  const contextParts = [`# clients/${client}/brand.md\n\n${brand}`];
-  if (icp) contextParts.push(`# clients/${client}/icp.md\n\n${icp}`);
-  if (historique) contextParts.push(`# clients/${client}/historique.md\n\n${historique}`);
+  if (brand) {
+    contextParts.push(`# clients/${client}/brand.md\n\n${brand}`);
+    const icp = readIfExists(path.join(CLIENTS_DIR, client, "icp.md"));
+    const historique = readIfExists(path.join(CLIENTS_DIR, client, "historique.md"));
+    if (icp) contextParts.push(`# clients/${client}/icp.md\n\n${icp}`);
+    if (historique) contextParts.push(`# clients/${client}/historique.md\n\n${historique}`);
+  }
 
   if (agent === "createur" || agent === "presentateur") {
     const brief = latestBrief(client);
     if (brief) contextParts.push(`# Brief de référence (le plus récent)\n\n${brief}`);
+  }
+
+  // Document d'entrée fourni (agents data)
+  if (sourceDoc?.trim()) {
+    contextParts.push(`# Document d'entrée à traiter\n\n${sourceDoc.trim()}`);
   }
 
   // 3. Contrat de sortie pour ce contexte API (pas d'outils Write ici)
@@ -116,10 +128,12 @@ Frontmatter YAML obligatoire en tête, avec au minimum :
 client: ${client} / campagne: ${slugify(campagne)} / agent: ${agent} / date: ${today} / version: 1 / statut: draft / framework: (le framework nommé que tu utilises)${
     format ? ` / format: ${format}` : ""
   }
-
-Mémoire et références :
-
-${contextParts.join("\n\n---\n\n")}`;
+${
+  cfg.needsInput
+    ? "\nTraite le « Document d'entrée à traiter » ci-dessous. N'invente aucune donnée absente de ce document.\n"
+    : ""
+}
+${contextParts.length ? `Mémoire et références :\n\n${contextParts.join("\n\n---\n\n")}` : ""}`;
 
   const anthropic = new Anthropic();
   const response = await anthropic.messages.create({

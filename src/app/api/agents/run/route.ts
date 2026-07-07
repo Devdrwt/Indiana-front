@@ -12,6 +12,7 @@ export async function POST(req: Request) {
     campagne?: string;
     contexte?: string;
     format?: string;
+    input?: string;
   };
   try {
     body = await req.json();
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Corps JSON invalide." }, { status: 400 });
   }
 
-  const { agent, client, campagne, contexte, format } = body;
+  const { agent, client, campagne, contexte, format, input } = body;
 
   if (!agent || !RUNNABLE_AGENTS.includes(agent)) {
     return NextResponse.json(
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await runAgent({ agent, client, campagne, contexte, format });
+    const result = await runAgent({ agent, client, campagne, contexte, format, input });
     return NextResponse.json(result);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Erreur inconnue.";

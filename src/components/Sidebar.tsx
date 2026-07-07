@@ -23,6 +23,14 @@ export default function Sidebar() {
         </div>
       </Link>
 
+      <Link
+        href="/nouveau"
+        className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg font-semibold text-sm text-white transition-transform hover:-translate-y-0.5"
+        style={{ background: "linear-gradient(92deg, var(--or), #b45309)" }}
+      >
+        + Nouvelle production
+      </Link>
+
       <nav className="flex flex-col gap-1 text-sm">
         <NavItem href="/" label="Vue d'ensemble" active={pathname === "/"} />
 

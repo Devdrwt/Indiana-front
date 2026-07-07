@@ -34,7 +34,7 @@ export interface Livrable {
   content: string;
 }
 
-const AGENT_FOLDERS: Record<Agent, string> = {
+export const AGENT_FOLDERS: Record<Agent, string> = {
   // Métier
   strategiste: "briefs",
   createur: "content",

@@ -30,3 +30,16 @@ export const CLIENTS = [
   "drwintech", "cnad", "staybj", "ceremo",
   "alogo", "afri-members", "whatsapp-crm", "rnb",
 ] as const;
+
+// Agents pilotables depuis le formulaire « Nouvelle production » (ceux qui
+// produisent à partir de la mémoire client). Les agents data-dépendants
+// (analyste, gmail, fireflies, cv, appel-offres) ont besoin de fichiers
+// d'entrée et ne sont pas exposés dans le formulaire.
+export const RUNNABLE_AGENT_KEYS = [
+  "strategiste",
+  "createur",
+  "designer",
+  "presentateur",
+  "institutionnel",
+  "cahier-des-charges",
+] as const;

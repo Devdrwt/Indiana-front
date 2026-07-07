@@ -135,6 +135,10 @@ ${contextParts.join("\n\n---\n\n")}`;
     .join("")
     .trim();
 
+  // Le modèle entoure parfois sa réponse d'un bloc ```markdown … ``` : on le retire.
+  const fence = text.match(/^```[a-zA-Z]*\s*\n([\s\S]*?)\n```$/);
+  if (fence) text = fence[1].trim();
+
   // Filet de sécurité : si le modèle n'a pas mis de frontmatter, on le préfixe.
   if (!text.startsWith("---")) {
     const fm = [

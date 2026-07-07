@@ -75,7 +75,10 @@ export function getLivrables(agent?: Agent): Livrable[] {
       const { data, content } = matter(raw);
 
       livrables.push({
-        id: file.replace(".md", ""),
+        // Préfixe dossier : deux agents peuvent produire le même nom de
+        // fichier dans des dossiers différents. `__` reste URL-safe pour
+        // la route /livrables/[id].
+        id: `${folder}__${file.replace(/\.md$/, "")}`,
         path: fullPath,
         client: data.client ?? "?",
         campagne: data.campagne ?? "",
